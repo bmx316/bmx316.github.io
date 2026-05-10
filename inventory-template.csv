@@ -1,0 +1,9 @@
+type,bin_or_machine_id,make,model,serial_number,year,control,swing_or_size,powered_up,condition,accessories,manuals_included,photo_filenames,video_filename,asking_price_usd,walk_away_price_usd,location_in_warehouse,notes
+machine,M-001,Studer,S30,,,,Yes/No,,,,,,,,,,
+machine,M-002,Studer,S33,,,,Yes/No,,,,,,,,,,
+machine,M-003,Studer,S40,,,,Yes/No,,,,,,,,,,
+part,P-001,Studer,wheelhead spindle,,,,,Used / NOS,,,,,,,,,
+part,P-002,Fanuc,control board A16B-xxxx,,,,,Used / NOS,,,,,,,,,
+bin,B-001,mixed,grinding wheels (lot of ~50),,,,,New & used mix,,,,,,,,,
+bin,B-002,mixed,steady rests + tailstock centers,,,,,Used,,,,,,,,,
+bin,B-003,mixed,scrap cast iron,,,,,Scrap,,,,,,,,,
