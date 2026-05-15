@@ -1,0 +1,7 @@
+.env
+data/
+obsidian/
+__pycache__/
+*.pyc
+.venv/
+venv/
