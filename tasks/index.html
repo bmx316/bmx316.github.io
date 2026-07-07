@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111318">
+  <title>TaskScore — Bang for the Buck Task List</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-row">
+      <h1>⚡ TaskScore</h1>
+      <div class="header-actions">
+        <button id="ai-btn" class="btn btn-ai" title="Use AI to prioritize your list">✨ AI Prioritize</button>
+        <button id="settings-btn" class="btn btn-icon" title="Settings" aria-label="Settings">⚙️</button>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab" data-section="work" role="tab">💼 Work</button>
+      <button class="tab" data-section="personal" role="tab">🏠 Personal</button>
+    </nav>
+  </header>
+
+  <main>
+    <form id="quick-add" autocomplete="off">
+      <input id="new-title" type="text" placeholder="Add a task… (Enter to add)" required maxlength="300">
+      <div class="quick-add-extras">
+        <select id="new-score" title="Optional: your guess at how long this will take">
+          <option value="">⏱ time guess</option>
+        </select>
+        <select id="new-impact" title="Optional: how much impact will completing this have?">
+          <option value="">🎯 impact</option>
+          <option value="1">🎯 1 · minor</option>
+          <option value="2">🎯 2</option>
+          <option value="3">🎯 3 · moderate</option>
+          <option value="4">🎯 4</option>
+          <option value="5">🎯 5 · huge</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Add</button>
+      </div>
+    </form>
+
+    <div id="stale-notice" class="notice" hidden>
+      List changed since the last AI prioritization — order shown uses the built-in formula.
+      <button id="stale-rerun" class="link-btn">Re-run AI</button>
+    </div>
+
+    <ul id="task-list" class="task-list"></ul>
+    <p id="empty-msg" class="empty-msg" hidden>No open tasks — add one above. Quick wins float to the top.</p>
+
+    <details id="done-section" class="done-section">
+      <summary>✅ Done (<span id="done-count">0</span>)</summary>
+      <ul id="done-list" class="task-list done-list"></ul>
+    </details>
+
+    <details class="legend">
+      <summary>📖 Scoring legend — time → score</summary>
+      <table>
+        <thead><tr><th>Time</th><th>Score</th></tr></thead>
+        <tbody id="legend-body"></tbody>
+      </table>
+      <p class="legend-note">Priority = impact ÷ time score. High-impact quick tasks rise to the top — the most bang for the buck.</p>
+    </details>
+
+    <footer id="stats" class="stats"></footer>
+  </main>
+
+  <dialog id="settings-dialog">
+    <form method="dialog" class="settings-form">
+      <h2>Settings</h2>
+      <p id="settings-hint" class="settings-hint" hidden>
+        ✨ AI features (smart prioritization, follow-up questions, automation suggestions) need a Claude API key.
+        The app works fully without one using the built-in formula.
+      </p>
+      <label>
+        Claude API key
+        <input id="api-key" type="password" placeholder="sk-ant-…" autocomplete="off">
+        <small>Stored only in this browser (localStorage). Never sent anywhere except api.anthropic.com. Get one at console.anthropic.com.</small>
+      </label>
+      <label>
+        AI model
+        <select id="model-select">
+          <option value="claude-opus-4-8">Claude Opus 4.8 — best quality (default)</option>
+          <option value="claude-sonnet-5">Claude Sonnet 5 — balanced</option>
+          <option value="claude-haiku-4-5">Claude Haiku 4.5 — cheapest</option>
+        </select>
+      </label>
+      <div class="settings-actions">
+        <button value="save" class="btn btn-primary">Save</button>
+        <button value="cancel" class="btn">Cancel</button>
+      </div>
+      <hr>
+      <button type="button" id="clear-data" class="btn btn-danger">Clear all app data…</button>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
