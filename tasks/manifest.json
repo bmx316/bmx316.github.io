@@ -1,0 +1,16 @@
+{
+  "name": "TaskScore — Bang for the Buck Task List",
+  "short_name": "TaskScore",
+  "description": "Time-scored task list that prioritizes high-impact quick wins.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#111318",
+  "theme_color": "#111318",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111318'/><text x='50' y='72' font-size='60' text-anchor='middle'>⚡</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
