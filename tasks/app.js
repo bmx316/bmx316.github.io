@@ -133,10 +133,10 @@ function priorityValue(task) {
   return impact / effectiveScore(task);
 }
 
-function sortedOpenTasks() {
-  const open = state.tasks.filter(t => !t.done && t.section === state.settings.activeSection);
+function sortedOpenTasks(section = state.settings.activeSection) {
+  const open = state.tasks.filter(t => !t.done && t.section === section);
   const ai = state.aiOrder;
-  if (ai && !ai.stale && ai.section === state.settings.activeSection) {
+  if (ai && !ai.stale && ai.section === section) {
     return open.slice().sort((a, b) => (a.aiRank ?? 999) - (b.aiRank ?? 999));
   }
   return open.slice().sort((a, b) => {
@@ -410,6 +410,53 @@ async function aiPrioritize() {
   }
 }
 
+// ---------- Markdown export (Obsidian-friendly) ----------
+function exportMarkdown() {
+  const day = ts => new Date(ts).toISOString().slice(0, 10);
+  let md = `# TaskScore — ${day(Date.now())}\n`;
+  for (const section of ["work", "personal"]) {
+    const label = section === "work" ? "💼 Work" : "🏠 Personal";
+    const open = sortedOpenTasks(section);
+    const done = state.tasks
+      .filter(t => t.done && t.section === section)
+      .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
+    if (!open.length && !done.length) continue;
+    md += `\n## ${label}\n`;
+    for (const t of open) {
+      const bits = [];
+      if (t.score != null) bits.push(`⏱ ${scoreLabel(t.score)} (score ${t.score})`);
+      if (t.impact != null) bits.push(`🎯 impact ${t.impact}`);
+      if (t.aiQuestion && !t.aiAnswer) bits.push(`❓ ${t.aiQuestion}`);
+      md += `- [ ] ${t.title}${bits.length ? " — " + bits.join(" · ") : ""}\n`;
+    }
+    if (done.length) {
+      md += `\n### Done\n`;
+      for (const t of done) {
+        const took = t.actualScore != null ? ` — took ${scoreLabel(t.actualScore)}` : "";
+        const when = t.completedAt ? ` ✅ ${day(t.completedAt)}` : "";
+        md += `- [x] ${t.title}${took}${when}\n`;
+      }
+    }
+  }
+  return md;
+}
+
+async function handleExport() {
+  const md = exportMarkdown();
+  try {
+    await navigator.clipboard.writeText(md);
+    toast("📋 Markdown copied — paste it into an Obsidian note.");
+  } catch {
+    // clipboard blocked (permissions / non-secure context) → download instead
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([md], { type: "text/markdown" }));
+    a.download = `taskscore-${new Date().toISOString().slice(0, 10)}.md`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast("⬇️ Markdown file downloaded — drop it into your Obsidian vault.");
+  }
+}
+
 // ---------- actions ----------
 function addTask(title, score, impact) {
   state.tasks.push({
@@ -488,6 +535,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }));
 
   $("#ai-btn").addEventListener("click", aiPrioritize);
+  $("#export-btn").addEventListener("click", handleExport);
   $("#stale-rerun").addEventListener("click", aiPrioritize);
   $("#settings-btn").addEventListener("click", () => { $("#settings-hint").hidden = true; openSettings(); });
 
