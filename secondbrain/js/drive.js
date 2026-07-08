@@ -77,11 +77,19 @@ async function getVaultId() {
     vaultId = data.files[0].id;
     return vaultId;
   }
+  // Fallback: try the known vault ID directly
+  try {
+    const testRes = await gfetch(`${API}/files/1JZDW2u4PfBfmrn9Vx-RW1zIUTR_brT8Q?fields=id`);
+    if (testRes.ok) {
+      vaultId = '1JZDW2u4PfBfmrn9Vx-RW1zIUTR_brT8Q';
+      return vaultId;
+    }
+  } catch {}
   // Fallback to path-based search
   let parent = 'root';
   for (const name of VAULT_PATH) {
     const f = await findChild(parent, name, true);
-    if (!f) throw new Error(`Could not find vault at "${VAULT_PATH.join('/')}" or by direct search. Make sure the folder exists and you have access to it.`);
+    if (!f) throw new Error(`Could not find vault. If you have a 2026 Vault folder in your Drive, please share it or check permissions.`);
     parent = f.id;
   }
   vaultId = parent;
