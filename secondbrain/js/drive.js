@@ -1,16 +1,25 @@
 // drive.js — Google Drive vault sync via Google Identity Services (client-side OAuth)
 // and the Drive v3 REST API. The GIS script is loaded on demand so the app stays
-// self-contained offline. Token lives in memory only; client ID in localStorage settings.
+// self-contained offline. The access token is kept in sessionStorage so reloads within
+// the same tab don't force a re-consent; sync silently refreshes it when it expires.
 
-const VAULT_PATH = ['Work MacBook Pro', '2026 Vault'];
+const VAULT_NAME = '2026 Vault';
+const KNOWN_VAULT_ID = '1JZDW2u4PfBfmrn9Vx-RW1zIUTR_brT8Q';
 const SCOPE = 'https://www.googleapis.com/auth/drive';
 const API = 'https://www.googleapis.com/drive/v3';
 const UPLOAD = 'https://www.googleapis.com/upload/drive/v3';
+const TOKEN_KEY = 'secondbrain.gtoken';
 
 let accessToken = null;
-let tokenClient = null;
+let tokenExpiry = 0;
 
-export function driveConnected() { return Boolean(accessToken); }
+// Restore a still-valid token from this tab's session so a reload doesn't disconnect.
+try {
+  const saved = JSON.parse(sessionStorage.getItem(TOKEN_KEY) || 'null');
+  if (saved && saved.expiry - 60000 > Date.now()) { accessToken = saved.token; tokenExpiry = saved.expiry; }
+} catch {}
+
+export function driveConnected() { return Boolean(accessToken) && tokenExpiry - 60000 > Date.now(); }
 
 function loadGIS() {
   if (window.google?.accounts?.oauth2) return Promise.resolve();
@@ -23,31 +32,55 @@ function loadGIS() {
   });
 }
 
-export async function connectDrive(clientId) {
-  if (!clientId) throw new Error('Enter your Google OAuth client ID first.');
+// silent: true asks Google for a token without any popup — works once the user has
+// consented before and is still signed in. Falls back to the consent popup otherwise.
+async function requestToken(clientId, { silent = false } = {}) {
   await loadGIS();
   return new Promise((resolve, reject) => {
-    tokenClient = google.accounts.oauth2.initTokenClient({
+    let settled = false;
+    const finish = (fn, v) => { if (!settled) { settled = true; fn(v); } };
+    const client = google.accounts.oauth2.initTokenClient({
       client_id: clientId,
       scope: SCOPE,
       callback: (resp) => {
-        if (resp.error) return reject(new Error(resp.error));
+        if (resp.error) return finish(reject, new Error(resp.error_description || resp.error));
         accessToken = resp.access_token;
-        resolve();
+        tokenExpiry = Date.now() + (Number(resp.expires_in) || 3600) * 1000;
+        try { sessionStorage.setItem(TOKEN_KEY, JSON.stringify({ token: accessToken, expiry: tokenExpiry })); } catch {}
+        finish(resolve);
       },
+      error_callback: (e) => finish(reject, new Error(e?.message || 'Google sign-in was closed or failed.')),
     });
-    tokenClient.requestAccessToken();
+    client.requestAccessToken(silent ? { prompt: '' } : {});
+    if (silent) setTimeout(() => finish(reject, new Error('Silent sign-in timed out.')), 8000);
   });
 }
 
-export function disconnectDrive() { accessToken = null; }
+export async function connectDrive(clientId) {
+  if (!clientId) throw new Error('Enter your Google OAuth client ID first.');
+  await requestToken(clientId);
+}
+
+// Called before any sync: reuses the current token, silently refreshes an expired one,
+// and only falls back to the consent popup as a last resort.
+export async function ensureConnected(clientId) {
+  if (driveConnected()) return;
+  if (!clientId) throw new Error('Enter your Google OAuth client ID and click Connect Drive first.');
+  try { await requestToken(clientId, { silent: true }); }
+  catch { await requestToken(clientId); }
+}
+
+export function disconnectDrive() {
+  accessToken = null; tokenExpiry = 0;
+  try { sessionStorage.removeItem(TOKEN_KEY); } catch {}
+}
 
 async function gfetch(url, opts = {}) {
   const res = await fetch(url, {
     ...opts,
     headers: { Authorization: `Bearer ${accessToken}`, ...(opts.headers || {}) },
   });
-  if (res.status === 401) { accessToken = null; throw new Error('Google session expired — reconnect Drive.'); }
+  if (res.status === 401) { disconnectDrive(); throw new Error('Google session expired — reconnect Drive.'); }
   if (!res.ok) throw new Error(`Drive API error ${res.status}: ${await res.text().catch(() => '')}`);
   return res;
 }
@@ -69,14 +102,20 @@ async function findChild(parentId, name, isFolder) {
 let vaultId = null;
 async function getVaultId() {
   if (vaultId) return vaultId;
-  let parent = 'root';
-  for (const name of VAULT_PATH) {
-    const f = await findChild(parent, name, true);
-    if (!f) throw new Error(`Could not find "${name}" under My Drive — is the vault synced at My Drive/${VAULT_PATH.join('/')}?`);
-    parent = f.id;
-  }
-  vaultId = parent;
-  return vaultId;
+  // Search by name anywhere in Drive — works no matter which folder the vault lives in.
+  try {
+    const q = `name = '${esc(VAULT_NAME)}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
+    const res = await gfetch(`${API}/files?q=${encodeURIComponent(q)}&fields=files(id)&pageSize=1`);
+    const data = await res.json();
+    if (data.files?.length) { vaultId = data.files[0].id; return vaultId; }
+  } catch {}
+  // Fallback: the folder ID we've seen before.
+  try {
+    await gfetch(`${API}/files/${KNOWN_VAULT_ID}?fields=id`);
+    vaultId = KNOWN_VAULT_ID;
+    return vaultId;
+  } catch {}
+  throw new Error(`Could not find a "${VAULT_NAME}" folder in this Google account's Drive.`);
 }
 
 async function readFile(fileId) {

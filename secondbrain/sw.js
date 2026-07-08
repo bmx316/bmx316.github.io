@@ -1,5 +1,5 @@
 // sw.js — cache-first app shell so view/add/complete work offline.
-const VERSION = 'sb-v1';
+const VERSION = 'sb-v2';
 const SHELL = [
   './',
   './index.html',
