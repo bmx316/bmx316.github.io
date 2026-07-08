@@ -1,0 +1,87 @@
+/* themes.css — five deliberate visual directions (see THEMES.md).
+   Each theme defines the same custom-property contract with light-dark() pairs.
+   data-scheme (auto/light/dark) flips color-scheme. */
+
+:root { color-scheme: light dark; }
+:root[data-scheme='light'] { color-scheme: light; }
+:root[data-scheme='dark'] { color-scheme: dark; }
+
+/* 1 — Ledger: paper day-book, bookkeeper's green ink */
+:root[data-theme='ledger'] {
+  --bg: light-dark(#f5f0e6, #17140e);
+  --surface: light-dark(#fdfaf3, #211d14);
+  --ink: light-dark(#241f15, #ece5d3);
+  --muted: light-dark(#7a7059, #9a9078);
+  --accent: light-dark(#486b4d, #7fae87);
+  --accent-ink: light-dark(#fdfaf3, #10130f);
+  --line: light-dark(#d9d0bc, #37311f);
+  --danger: light-dark(#9a4a32, #cf8a6f);
+  --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-body: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --radius: 6px;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+
+/* 2 — Terminal: phosphor console / greenbar printout */
+:root[data-theme='terminal'] {
+  --bg: light-dark(#f1f4f0, #0b0f0c);
+  --surface: light-dark(#e7ece7, #101712);
+  --ink: light-dark(#17281c, #c9e8d2);
+  --muted: light-dark(#5d7263, #5d8a6b);
+  --accent: light-dark(#1f7a48, #2fb56a);
+  --accent-ink: light-dark(#f1f4f0, #05130a);
+  --line: light-dark(#c8d3c9, #1d3325);
+  --danger: light-dark(#a03d2d, #e07856);
+  --font-display: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-body: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --radius: 2px;
+  --shadow: none;
+}
+
+/* 3 — Signal: Swiss poster, one loud red */
+:root[data-theme='signal'] {
+  --bg: light-dark(#ffffff, #101010);
+  --surface: light-dark(#f4f4f2, #1a1a1a);
+  --ink: light-dark(#111111, #f2f2ef);
+  --muted: light-dark(#6f6f6a, #8f8f88);
+  --accent: light-dark(#e63312, #ff5a36);
+  --accent-ink: #ffffff;
+  --line: light-dark(#dededa, #2c2c2c);
+  --danger: light-dark(#b3220a, #ff7a5c);
+  --font-display: 'Helvetica Neue', Helvetica, 'Arial Black', Arial, sans-serif;
+  --font-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --radius: 0px;
+  --shadow: none;
+}
+
+/* 4 — Tide: coastal dusk, low stimulation */
+:root[data-theme='tide'] {
+  --bg: light-dark(#edf2f5, #0d1b24);
+  --surface: light-dark(#f8fbfc, #14252f);
+  --ink: light-dark(#22333d, #d5e3ea);
+  --muted: light-dark(#68808d, #7793a2);
+  --accent: light-dark(#0e7c86, #4fb3bd);
+  --accent-ink: light-dark(#f8fbfc, #06181b);
+  --line: light-dark(#d3dee4, #21353f);
+  --danger: light-dark(#a05252, #d99090);
+  --font-display: Seravek, 'Gill Sans', Verdana, sans-serif;
+  --font-body: Seravek, 'Gill Sans', Verdana, sans-serif;
+  --radius: 12px;
+  --shadow: 0 2px 8px rgb(20 45 60 / 0.08);
+}
+
+/* 5 — Clay: terracotta workshop, tactile and warm */
+:root[data-theme='clay'] {
+  --bg: light-dark(#f2e2d0, #221510);
+  --surface: light-dark(#faf0e4, #2e1d15);
+  --ink: light-dark(#3a2417, #f0dfd1);
+  --muted: light-dark(#8f6f5a, #b08e77);
+  --accent: light-dark(#b4552d, #e0794a);
+  --accent-ink: light-dark(#faf0e4, #23100a);
+  --line: light-dark(#e0cbb3, #46301f);
+  --danger: light-dark(#8f3227, #e58a7c);
+  --font-display: 'Avenir Next', Avenir, 'Trebuchet MS', sans-serif;
+  --font-body: 'Avenir Next', Avenir, 'Trebuchet MS', sans-serif;
+  --radius: 16px;
+  --shadow: 0 3px 10px rgb(60 30 10 / 0.12);
+}
