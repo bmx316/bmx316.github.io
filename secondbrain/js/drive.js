@@ -2,7 +2,7 @@
 // and the Drive v3 REST API. The GIS script is loaded on demand so the app stays
 // self-contained offline. Token lives in memory only; client ID in localStorage settings.
 
-const VAULT_PATH = ['Work MacBook Pro', '2026 Vault'];
+const VAULT_PATH = ['2026 Vault'];  // Direct child of My Drive
 const KNOWN_VAULT_ID = '1JZDW2u4PfBfmrn9Vx-RW1zIUTR_brT8Q';
 const SCOPE = 'https://www.googleapis.com/auth/drive';
 const API = 'https://www.googleapis.com/drive/v3';
