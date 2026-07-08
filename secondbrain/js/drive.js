@@ -69,10 +69,19 @@ async function findChild(parentId, name, isFolder) {
 let vaultId = null;
 async function getVaultId() {
   if (vaultId) return vaultId;
+  // Try searching for 2026 Vault directly (works even if parent folder hierarchy isn't visible)
+  const q = `name = '2026 Vault' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
+  const res = await gfetch(`${API}/files?q=${encodeURIComponent(q)}&fields=files(id,name)&pageSize=1`);
+  const data = await res.json();
+  if (data.files?.length) {
+    vaultId = data.files[0].id;
+    return vaultId;
+  }
+  // Fallback to path-based search
   let parent = 'root';
   for (const name of VAULT_PATH) {
     const f = await findChild(parent, name, true);
-    if (!f) throw new Error(`Could not find "${name}" under My Drive — is the vault synced at My Drive/${VAULT_PATH.join('/')}?`);
+    if (!f) throw new Error(`Could not find vault at "${VAULT_PATH.join('/')}" or by direct search. Make sure the folder exists and you have access to it.`);
     parent = f.id;
   }
   vaultId = parent;
