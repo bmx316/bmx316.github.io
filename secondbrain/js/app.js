@@ -229,8 +229,9 @@ async function connectDriveFlow() {
 }
 
 async function syncVault() {
-  if (!drive.driveConnected()) return;
   try {
+    await drive.ensureConnected(getState().settings.driveClientId);
+    renderSettingsStatus();
     const found = await drive.fetchVaultTasks();
     update((s) => {
       const have = new Set(s.tasks.filter((t) => t.source === 'vault').map((t) => t.vaultFileName + '::' + t.vaultLine));

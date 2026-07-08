@@ -44,7 +44,7 @@ Settings → Intelligence → paste your key (`sk-ant-…`).
 3. Paste the client ID in Settings → Obsidian vault → **Connect Drive**.
 
 Then the app:
-- reads open checkboxes from `My Drive/Work MacBook Pro/2026 Vault` — the last 7
+- reads open checkboxes from your `2026 Vault` folder (found anywhere in your Drive) — the last 7
   `Daily/` notes, `Daily_Tasks.md`, `📥 Jira Inbox.md`, `📥 Inbox.md`;
 - checks tasks off in place (`- [ ]` → `- [x]`, wikilinks preserved) when you complete
   them here, and appends quick-adds to `📥 Inbox.md`;

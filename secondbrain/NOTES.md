@@ -45,7 +45,7 @@ Working notes kept while building. Decisions, verifications, known gaps.
     schema `{observations[], proposed_changes[{description, patch}]}`; `patch` is a JSON
     string `{"weights": {...}, "summary": "..."}` the app merges on one-tap accept
 - **Drive:** Google Identity Services token client (script loaded on demand), raw REST
-  (`drive/v3`). Resolves `My Drive/Work MacBook Pro/2026 Vault` by walking folder names.
+  (`drive/v3`). Finds the `2026 Vault` folder by a name search anywhere in Drive.
   Reads last 7 `Daily/*.md`, `Daily_Tasks.md`, `📥 Jira Inbox.md`, `📥 Inbox.md`.
   Completion flips `- [ ]` → `- [x]` on the original line (wikilinks preserved because the
   line is otherwise untouched); quick-adds are appended to `📥 Inbox.md` when connected.
