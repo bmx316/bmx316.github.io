@@ -3,6 +3,7 @@
 // self-contained offline. Token lives in memory only; client ID in localStorage settings.
 
 const VAULT_PATH = ['Work MacBook Pro', '2026 Vault'];
+const KNOWN_VAULT_ID = '1JZDW2u4PfBfmrn9Vx-RW1zIUTR_brT8Q';
 const SCOPE = 'https://www.googleapis.com/auth/drive';
 const API = 'https://www.googleapis.com/drive/v3';
 const UPLOAD = 'https://www.googleapis.com/upload/drive/v3';
@@ -69,27 +70,29 @@ async function findChild(parentId, name, isFolder) {
 let vaultId = null;
 async function getVaultId() {
   if (vaultId) return vaultId;
-  // Try searching for 2026 Vault directly (works even if parent folder hierarchy isn't visible)
-  const q = `name = '2026 Vault' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
-  const res = await gfetch(`${API}/files?q=${encodeURIComponent(q)}&fields=files(id,name)&pageSize=1`);
-  const data = await res.json();
-  if (data.files?.length) {
-    vaultId = data.files[0].id;
-    return vaultId;
-  }
-  // Fallback: try the known vault ID directly
+  // Try the known vault ID first (most reliable)
   try {
-    const testRes = await gfetch(`${API}/files/1JZDW2u4PfBfmrn9Vx-RW1zIUTR_brT8Q?fields=id`);
+    const testRes = await gfetch(`${API}/files/${KNOWN_VAULT_ID}?fields=id`);
     if (testRes.ok) {
-      vaultId = '1JZDW2u4PfBfmrn9Vx-RW1zIUTR_brT8Q';
+      vaultId = KNOWN_VAULT_ID;
       return vaultId;
     }
   } catch {}
-  // Fallback to path-based search
+  // Fallback: search for 2026 Vault by name
+  try {
+    const q = `name = '2026 Vault' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
+    const res = await gfetch(`${API}/files?q=${encodeURIComponent(q)}&fields=files(id)&pageSize=1`);
+    const data = await res.json();
+    if (data.files?.length) {
+      vaultId = data.files[0].id;
+      return vaultId;
+    }
+  } catch {}
+  // Last resort: path-based search
   let parent = 'root';
   for (const name of VAULT_PATH) {
     const f = await findChild(parent, name, true);
-    if (!f) throw new Error(`Could not find vault. If you have a 2026 Vault folder in your Drive, please share it or check permissions.`);
+    if (!f) throw new Error(`Vault not found. Check your Google Drive OAuth permissions and ensure 2026 Vault folder exists.`);
     parent = f.id;
   }
   vaultId = parent;
