@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two Lakes AI · Friendly AI help around Lake Minnetonka and Waconia</title>
+<meta name="description" content="Hands-on AI help for individuals and small businesses around Lake Minnetonka and Waconia. In-home setup, coaching, business audits, workshops, and custom automations. No hype.">
+<meta name="theme-color" content="#08202a">
+<meta property="og:title" content="Two Lakes AI">
+<meta property="og:description" content="Friendly, in-person and remote AI help for lake-area families and small businesses.">
+<meta property="og:type" content="website">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#possible">Skip to content</a>
+
+<header class="nav" id="nav">
+  <a class="brand" href="#top" aria-label="Two Lakes AI, home">
+    <svg viewBox="0 0 40 28" width="40" height="28" aria-hidden="true"><ellipse cx="14" cy="12" rx="13" ry="9" fill="currentColor" opacity=".9"/><ellipse cx="29" cy="19" rx="9" ry="6.5" fill="#f26b3a"/></svg>
+    <span>Two Lakes AI</span>
+  </a>
+  <nav aria-label="Main">
+    <a href="#possible">What's possible</a>
+    <a href="#services">Services</a>
+    <a href="#plans">Monthly plans</a>
+    <a href="#about">About</a>
+  </nav>
+  <a class="btn btn-small" href="#contact">Say hello</a>
+</header>
+
+<main id="top">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="sun" aria-hidden="true"></div>
+  <canvas id="water" aria-hidden="true"></canvas>
+  <div class="wrap hero-inner">
+    <p class="eyebrow light">Lake Minnetonka · Waconia · and everywhere in between</p>
+    <h1>AI is ready to help.<br><em>Let's get it working for you.</em></h1>
+    <p class="lede">I'm Troy, your neighbor in Minnetrista. I sit down with families and small businesses, in person or remote, and set up AI that takes real work off your plate. Plain English. No hype.</p>
+
+    <div class="ask" aria-label="Examples of things people ask for">
+      <div class="ask-bar">
+        <span class="ask-label">Imagine asking</span>
+        <span class="ask-text" id="askText">“Sort my inbox before I wake up.”</span><span class="caret" aria-hidden="true"></span>
+      </div>
+      <p class="ask-answer" id="askAnswer">By 7am: six emails that need you, drafts already written, the rest filed.</p>
+    </div>
+
+    <div class="hero-cta">
+      <a class="btn" href="#possible">Show me what's possible</a>
+      <a class="btn btn-ghost" href="#services">See services and prices</a>
+    </div>
+  </div>
+</section>
+
+<!-- POSSIBLE -->
+<section class="section" id="possible">
+  <div class="wrap">
+    <p class="eyebrow">What's possible</p>
+    <h2>Pick the one that sounds like you.</h2>
+    <p class="sub">These are the kinds of things I set up. Nothing here needs coding, and none of it is science fiction.</p>
+
+    <div class="explorer reveal">
+      <div class="explorer-pick">
+        <div class="seg" role="tablist" aria-label="Home or work">
+          <button role="tab" aria-selected="true" data-mode="home">At home</button>
+          <button role="tab" aria-selected="false" data-mode="work">At work</button>
+        </div>
+        <div class="chips" id="chips"></div>
+      </div>
+      <article class="explorer-card" id="personaCard" aria-live="polite"></article>
+    </div>
+  </div>
+</section>
+
+<!-- TEN THINGS -->
+<section class="section tint" id="know">
+  <div class="wrap">
+    <p class="eyebrow">What I can help with</p>
+    <h2>Ten things worth knowing, taught one&#8209;on&#8209;one.</h2>
+    <ol class="ten">
+      <li class="reveal"><h3>Assistants and agents</h3><p>How ChatGPT, Claude, Gemini, Copilot, and Grok differ, what an agent really is, and a personal one set up for your email, calendar, reminders, research, and errands.</p></li>
+      <li class="reveal"><h3>Cheap and safe</h3><p>The right plan for how you use it, no surprise limits, privacy basics, and a clear line for when a human stays in the loop.</p></li>
+      <li class="reveal"><h3>Your AI stack, mapped</h3><p>No more random experiments. We list the tools you already pay for and connect AI to them: Gmail, Drive, Notion, Microsoft 365, Stripe, calendars.</p></li>
+      <li class="reveal"><h3>Automation and dashboards</h3><p>A daily dashboard, inbox triage, scheduled reports, and the repetitive office work handled before you sit down.</p></li>
+      <li class="reveal"><h3>Building without coding</h3><p>Websites, landing pages, simple apps, even games, built by describing what you want. Yes, from your phone.</p></li>
+      <li class="reveal"><h3>Visuals and video</h3><p>Product photos, motion graphics, and short videos for marketing and social. Plus how to spot a fake or edited image.</p></li>
+      <li class="reveal"><h3>AI for makers</h3><p>Sketch to 3D model and CAD, 3D printing, laser and metal-cut designs, and floor plans from a LiDAR phone scan.</p></li>
+      <li class="reveal"><h3>Shopping and selling</h3><p>AI shopping agents, better product listings, and help getting a small shop selling online.</p></li>
+      <li class="reveal"><h3>Career and business</h3><p>AI-proof business ideas, the widening skill gap, how pros really use AI day to day, and honest ways to earn with it.</p></li>
+      <li class="reveal"><h3>Staying current</h3><p>I follow the new releases every week, from Claude and Gemini to robotics, and tell you which ones matter.</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- CALCULATOR -->
+<section class="section" id="calc">
+  <div class="wrap calc-grid">
+    <div>
+      <p class="eyebrow">Try it</p>
+      <h2>How much of your week is busywork?</h2>
+      <p class="sub">Drag the sliders to your typical week. The estimate assumes AI trims about a third of each task, which is a deliberately cautious guess. An audit measures your real number.</p>
+      <div class="sliders" id="sliders">
+        <label><span>Email and messages <b data-out="email"></b></span><input type="range" min="0" max="15" value="5" data-k="email"></label>
+        <label><span>Scheduling and reminders <b data-out="sched"></b></span><input type="range" min="0" max="15" value="3" data-k="sched"></label>
+        <label><span>Quotes, invoices, paperwork <b data-out="paper"></b></span><input type="range" min="0" max="15" value="4" data-k="paper"></label>
+        <label><span>Marketing and social posts <b data-out="mkt"></b></span><input type="range" min="0" max="15" value="2" data-k="mkt"></label>
+      </div>
+    </div>
+    <aside class="calc-result reveal" aria-live="polite">
+      <p class="calc-kicker">You could get back roughly</p>
+      <p class="calc-big"><span id="hrsYear">0</span><small>hours a year</small></p>
+      <p class="calc-line">That's about <strong id="hrsWeek">0</strong> hours every week, or <strong id="workWeeks">0</strong> full work weeks.</p>
+      <a class="btn" href="#contact">Find my time-savers</a>
+      <p class="fine">An illustration, not a promise. Based on 48 working weeks.</p>
+    </aside>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="section dark" id="services">
+  <div class="wrap">
+    <p class="eyebrow light">Services</p>
+    <h2>Clear prices. Real results.</h2>
+    <p class="sub">In your home, at your office, or over a video call.</p>
+    <div class="services">
+      <article class="svc reveal"><p class="price">$199 <small>flat</small></p><h3>AI setup, at your place</h3><p>Phone, computer, and accounts sorted, with your first assistant running before I leave.</p></article>
+      <article class="svc reveal"><p class="price">$125 <small>/ hour</small></p><h3>One-on-one AI help</h3><p>Patient coaching for individuals, seniors, and families. Bring your questions.</p></article>
+      <article class="svc reveal feature"><p class="price">$750</p><h3>Small-business AI audit</h3><p>I map the tools you use, find your 3 to 5 biggest time-savers, and hand you a written plan.</p></article>
+      <article class="svc reveal"><p class="price">$1,250</p><h3>Team AI workshop</h3><p>A hands-on session where your staff use AI on their own real work.</p></article>
+      <article class="svc reveal"><p class="price">$1,500 – $4,000</p><h3>Custom automations</h3><p>Inbox, scheduling, quotes, invoicing, and dashboards, built around how you already work.</p></article>
+      <article class="svc reveal"><p class="price quote">By quote</p><h3>Websites and marketing content</h3><p>AI-built sites, product photos, and short videos that look like you hired an agency.</p></article>
+      <article class="svc reveal"><p class="price quote">By quote</p><h3>Maker and 3D/CAD sessions</h3><p>For hobbyists and fabricators: idea to model to printed, cut, or built.</p></article>
+      <article class="svc reveal ask-card"><h3>Not sure where to start?</h3><p>Tell me what's eating your time. I'll point you to the smallest thing that helps.</p><a class="btn btn-small" href="#contact">Ask Troy</a></article>
+    </div>
+  </div>
+</section>
+
+<!-- PLANS -->
+<section class="section" id="plans">
+  <div class="wrap">
+    <p class="eyebrow">Monthly plans</p>
+    <h2>Someone to call when AI changes again.</h2>
+    <p class="sub">It will. These plans keep you current without having to keep up.</p>
+    <div class="plans">
+      <article class="plan reveal"><h3>Home Helpline</h3><p class="plan-price">$59<small>/mo</small></p><p class="plan-for">Individuals and families</p><ul><li>Ask questions any time</li><li>Help when an app or account changes</li><li>Plain-English notes on what's new</li></ul></article>
+      <article class="plan reveal"><h3>Dockside</h3><p class="plan-price">$295<small>/mo</small></p><p class="plan-for">Solo pros and small shops</p><ul><li>Priority help for you and your tools</li><li>Tune-ups to your automations</li><li>Regular check-in on what to try next</li></ul></article>
+      <article class="plan reveal pop"><span class="tag">For growing teams</span><h3>Harbor</h3><p class="plan-price">$595<small>/mo</small></p><p class="plan-for">Small businesses with staff</p><ul><li>Everything in Dockside</li><li>Ongoing automation upkeep and additions</li><li>Staff questions answered directly</li></ul></article>
+      <article class="plan reveal"><h3>Fractional AI Lead</h3><p class="plan-price">$1,195<small>/mo</small></p><p class="plan-for">Your part-time head of AI</p><ul><li>An AI roadmap owned and updated</li><li>Tool and vendor decisions made with you</li><li>Team training as things change</li></ul></article>
+    </div>
+  </div>
+</section>
+
+<!-- HONEST -->
+<section class="section tint" id="honest">
+  <div class="wrap">
+    <p class="eyebrow">The honest part</p>
+    <h2>AI can sound sure of itself and still be wrong.</h2>
+    <p class="sub">So everything I set up comes with guardrails you understand.</p>
+    <div class="honest">
+      <div class="reveal"><h3>A human stays in the loop</h3><p>AI drafts, you approve. We decide together which jobs it can finish alone and which always wait for you.</p></div>
+      <div class="reveal"><h3>Your privacy comes first</h3><p>You'll know what each tool can see, what it keeps, and how to turn it off. Your accounts stay yours.</p></div>
+      <div class="reveal"><h3>No runaway bills</h3><p>The right plan for how you use it. Often that's one modest subscription, sometimes none.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT + AREA -->
+<section class="section" id="about">
+  <div class="wrap about-grid">
+    <div>
+      <p class="eyebrow">About</p>
+      <h2>A product owner who makes house calls.</h2>
+      <p>I'm Troy Kendrick. I spent my career as a product owner, turning what people need into software that works. Now I do that at kitchen tables and shop counters around the lakes.</p>
+      <p>I use these tools every day and track what changes every week, so you don't have to. You get what works right now, explained the way a neighbor would explain it.</p>
+      <p class="towns"><strong>Serving</strong> Wayzata, Excelsior, Mound, Navarre, Spring Park, Minnetrista, Victoria, St.&nbsp;Bonifacius, Waconia, and Chanhassen. Remote anywhere.</p>
+    </div>
+    <figure class="map reveal">
+      <svg viewBox="0 0 520 380" role="img" aria-label="Sketch map of towns served around Lake Minnetonka and Lake Waconia">
+        <path class="lake" d="M205 118c22-22 60-30 92-18 20 8 30-10 56-8 34 2 62 20 70 44 6 20-10 34-34 36-22 2-30 18-52 24-26 8-44-6-66 2-24 8-52 10-70-6-20-18-18-52 4-74z"/>
+        <path class="lake" d="M62 262c14-18 46-24 72-16 22 7 34 26 26 44-8 17-36 24-62 20-30-5-52-26-36-48z"/>
+        <text class="lake-name" x="310" y="150">Lake Minnetonka</text>
+        <text class="lake-name" x="110" y="285">Lake Waconia</text>
+        <g class="town"><circle cx="440" cy="92" r="5"/><text x="450" y="88">Wayzata</text></g>
+        <g class="town"><circle cx="300" cy="96" r="5"/><text x="286" y="84">Navarre</text></g>
+        <g class="town"><circle cx="232" cy="108" r="5"/><text x="150" y="98">Spring Park</text></g>
+        <g class="town"><circle cx="188" cy="146" r="5"/><text x="140" y="142">Mound</text></g>
+        <g class="town home"><circle cx="150" cy="188" r="7"/><text x="52" y="192">Minnetrista</text></g>
+        <g class="town"><circle cx="196" cy="232" r="5"/><text x="206" y="246">St. Bonifacius</text></g>
+        <g class="town"><circle cx="112" cy="322" r="5"/><text x="124" y="336">Waconia</text></g>
+        <g class="town"><circle cx="296" cy="268" r="5"/><text x="308" y="272">Victoria</text></g>
+        <g class="town"><circle cx="372" cy="214" r="5"/><text x="384" y="226">Excelsior</text></g>
+        <g class="town"><circle cx="418" cy="292" r="5"/><text x="402" y="314">Chanhassen</text></g>
+      </svg>
+      <figcaption>A sketch, not to scale.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section tint" id="faq">
+  <div class="wrap narrow">
+    <p class="eyebrow">Good questions</p>
+    <h2>Before you ask.</h2>
+    <details class="reveal"><summary>Do I need to be good with technology?</summary><p>No. If you can send a text, you can use AI. We start wherever you are, and I leave you with notes written for you.</p></details>
+    <details class="reveal"><summary>Which AI should I pay for?</summary><p>It depends on what you do and what you already own. Part of the first visit is choosing one that fits, so you aren't paying for three.</p></details>
+    <details class="reveal"><summary>Is it safe to connect AI to my email or business accounts?</summary><p>It can be, when it's set up with care. I'll show you exactly what it can reach, keep you in control of anything that sends or spends, and skip anything you aren't comfortable with.</p></details>
+    <details class="reveal"><summary>What if the AI gets something wrong?</summary><p>It will sometimes. That's why we build in checks: drafts you review, summaries that link to their source, and limits on what runs unattended.</p></details>
+    <details class="reveal"><summary>Do you come to me?</summary><p>Yes, anywhere around Lake Minnetonka and Waconia. Remote sessions work well too, wherever you are.</p></details>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="section dark contact" id="contact">
+  <div class="wrap contact-grid">
+    <div>
+      <p class="eyebrow light">Say hello</p>
+      <h2>Tell me what's eating your time.</h2>
+      <p class="sub">A few lines is plenty. I'll reply with the smallest step that would help, and what it costs.</p>
+      <p class="direct" id="direct"></p>
+    </div>
+    <form id="hello" novalidate>
+      <label>Your name<input name="name" autocomplete="name" required></label>
+      <fieldset><legend>This is for</legend>
+        <label class="radio"><input type="radio" name="who" value="Home" checked><span>Me or my family</span></label>
+        <label class="radio"><input type="radio" name="who" value="Business"><span>My business</span></label>
+      </fieldset>
+      <label>Your town<input name="town" autocomplete="address-level2"></label>
+      <label>What would you like help with?<textarea name="msg" rows="4" required></textarea></label>
+      <label>Best way to reach you<input name="reach" placeholder="Phone or email" required></label>
+      <button class="btn" type="submit">Write my message</button>
+      <p class="form-note" id="formNote" role="status"></p>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <span>© <span id="yr">2026</span> Two Lakes AI · Minnetrista, Minnesota</span>
+    <span>Friendly AI help, in person and remote.</span>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
