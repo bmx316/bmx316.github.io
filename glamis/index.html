@@ -175,7 +175,9 @@ function terrainH(x,z){
 const CELL=2.5, hCache=new Map();
 function gridH(i,j){const k=i*131072+j;let v=hCache.get(k);
   if(v===undefined){if(hCache.size>60000)hCache.clear();v=terrainH(i*CELL,j*CELL);hCache.set(k,v);}return v;}
+let FLAT=false;
 function groundH(x,z){
+  if(FLAT)return 0;
   const gx=x/CELL,gz=z/CELL,i=Math.floor(gx),j=Math.floor(gz),fx=gx-i,fz=gz-j;
   const b=gridH(i+1,j),c=gridH(i,j+1);
   if(fx+fz<=1){const a=gridH(i,j);return a+(b-a)*fx+(c-a)*fz;}
@@ -693,77 +695,96 @@ function stepDust(dt){
   dustGeo.attributes.position.needsUpdate=dustGeo.attributes.aA.needsUpdate=dustGeo.attributes.aS.needsUpdate=true;
 }
 
-/* ---------------- player physics ---------------- */
-const MASS=1250,GRAV=9.81,IX=1300,IY=1550,IZ=560;
-const SUSP={ay:.18,lmax:.65,lmin:.1,k:17000,pre:.03,cc:1500,cr:2600};
-const WH=[{x:-WX,z:-WZ,f:1},{x:WX,z:-WZ,f:1},{x:-WX,z:WZ,f:0},{x:WX,z:WZ,f:0}];
+/* ---------------- player physics ----------------
+   Two-seat Pro R: about 2,220 lb dry; with fuel, fluids and two riders in gear it rolls at ~2,680 lb (1,215 kg).
+   Rear-biased (44/56), 104.5 in wheelbase, 74 in wide, 16 in clearance, 22/24.5 in of usable wheel travel. */
+const PH={mass:1215,ix:1750,iy:1950,iz:560,power:132000,fmax:11500,crr:.125,crrV:.003,ebrake:.06,cda:1.1,
+  muX:.95,slipPk:.24,steerRate:1.25,steerMax:.52,steerMin:.10,arb:[9000,6000]};
+const GRAV=9.81,AY=.18,COM=new V3(0,-.08,.16);
+const WH=[
+  {x:-WX,z:-WZ,f:1,lmax:.746,trav:.58,k1:13500,k2:30000,cc:1700,cr:3200,mu:.68},
+  {x:WX,z:-WZ,f:1,lmax:.746,trav:.58,k1:13500,k2:30000,cc:1700,cr:3200,mu:.68},
+  {x:-WX,z:WZ,f:0,lmax:.746,trav:.63,k1:16500,k2:36000,cc:2100,cr:4000,mu:.78},
+  {x:WX,z:WZ,f:0,lmax:.746,trav:.63,k1:16500,k2:36000,cc:2100,cr:4000,mu:.78}];
+const XOVER=.30,N0=3000;
 const HULL=[[-.62,1.04,-.04],[.62,1.04,-.04],[-.62,1.04,.78],[.62,1.04,.78],[-.55,-.02,-1.9],[.55,-.02,-1.9],[-.6,.3,1.85],[.6,.3,1.85],[0,-.36,-.4],[0,-.36,.7],[-.78,.3,0],[.78,.3,0]];
-const car={pos:new V3(),vel:new V3(),q:new Q(),w:new V3(),steer:0,thr:0,brk:0,hb:0,rpm:1200,rev:false,
-  L:[.5,.5,.5,.5],on:[0,0,0,0],spin:[0,0,0,0],grounded:0,air:0,slip:0,speed:0,fwdSpeed:0,impact:0,flipT:0,acc:new V3()};
+const car={pos:new V3(),vel:new V3(),q:new Q(),w:new V3(),steer:0,thr:0,tq:0,brk:0,hb:0,rpm:1200,rev:false,
+  L:[.55,.55,.55,.55],on:[0,0,0,0],spin:[0,0,0,0],grounded:0,air:0,slip:0,speed:0,fwdSpeed:0,impact:0,flipT:0,acc:new V3(),hull:0};
 const f=new V3(),r=new V3(),u=new V3(),F=new V3(),T=new V3(),tA=new V3(),tP=new V3(),tC=new V3(),tV=new V3(),tN=new V3(),tf=new V3(),tl=new V3(),tR=new V3(),tQ=new Q(),tF=new V3();
 function addForce(force,at){F.add(force);tR.subVectors(at,car.pos);T.add(tR.cross(force));}
 function physStep(dt,inp){
   f.set(0,0,-1).applyQuaternion(car.q);r.set(1,0,0).applyQuaternion(car.q);u.set(0,1,0).applyQuaternion(car.q);
-  F.set(0,-MASS*GRAV,0);T.set(0,0,0);
+  F.set(0,-PH.mass*GRAV,0);T.set(0,0,0);
   const v=car.vel.length(),vf=car.vel.dot(f);car.speed=v;car.fwdSpeed=vf;
-  // controls
-  const maxSteer=lerp(.54,.11,clamp(v/34,0,1));
-  const st=inp.steer*maxSteer;car.steer+=clamp(st-car.steer,-1.9*dt,1.9*dt);
+  // steering: hands can only turn the wheel so fast; it unwinds quicker than it winds on
+  const st=inp.steer*lerp(PH.steerMax,PH.steerMin,clamp(v/32,0,1));
+  const sr=(Math.abs(st)<Math.abs(car.steer)?1.7:1)*PH.steerRate*dt;car.steer+=clamp(st-car.steer,-sr,sr);
   let thr=inp.gas,brk=inp.brake;
-  if(vf<1.2&&inp.brake>.1&&inp.gas<.1){car.rev=true;}
+  if(vf<1.2&&inp.brake>.1&&inp.gas<.1)car.rev=true;
   if(inp.gas>.1&&vf>-0.5)car.rev=false;
-  if(car.rev&&vf<1.5){thr=-inp.brake*(vf<-7?0:.55);brk=inp.gas;}
-  car.thr=Math.abs(thr);car.brk=brk;
-  const drive=thr*Math.min(9600,131000/Math.max(Math.abs(vf),1));
-  let sumN=0,nOn=0,slip=0;const Ns=[0,0,0,0];
+  if(car.rev&&vf<1.5){thr=-inp.brake*(vf<-7?0:.5);brk=inp.gas;}
+  // engine + CVT take a beat to come on the pipe, and drop off faster
+  car.tq+=(thr-car.tq)*Math.min(1,dt/(Math.abs(thr)>Math.abs(car.tq)?.17:.09));
+  car.thr=Math.abs(car.tq);car.brk=brk;
+  const drive=car.tq*Math.min(PH.fmax,PH.power/Math.max(Math.abs(vf),1));
   const cs=Math.cos(car.steer),sn=Math.sin(car.steer);
+  let nOn=0,slip=0,sumN=0;
+  // pass 1: suspension geometry at each corner
   for(let i=0;i<4;i++){
     const W=WH[i];
-    tA.copy(car.pos).addScaledVector(r,W.x).addScaledVector(u,SUSP.ay).addScaledVector(f,-W.z);
-    tP.copy(tA).addScaledVector(u,-SUSP.lmax);
+    tA.copy(car.pos).addScaledVector(r,W.x-COM.x).addScaledVector(u,AY-COM.y).addScaledVector(f,-(W.z-COM.z));
+    tP.copy(tA).addScaledVector(u,-W.lmax);
     groundN(tP.x,tP.z,tN);
-    const clr=(tP.y-groundH(tP.x,tP.z))*tN.y-WHEEL_R;
-    const dn=Math.max(.35,u.dot(tN));
-    if(clr>=0){car.L[i]=SUSP.lmax;car.on[i]=0;W.N=0;continue;}
-    let x=Math.min(-clr/dn,.8);
-    car.L[i]=Math.max(SUSP.lmin,SUSP.lmax-x);car.on[i]=1;nOn++;
+    // a 32 in tire bridges small edges: sample across the contact patch
+    const gh=groundH(tP.x,tP.z)*.5+(groundH(tP.x+f.x*.24,tP.z+f.z*.24)+groundH(tP.x-f.x*.24,tP.z-f.z*.24))*.25;
+    const clr=(tP.y-gh)*tN.y-WHEEL_R,dn=Math.max(.35,u.dot(tN));
+    if(clr>=0){car.L[i]=W.lmax;car.on[i]=0;W.x_=0;W.N=0;continue;}
+    const x=Math.min(-clr/dn,W.trav+.1);W.x_=x;
+    car.L[i]=Math.max(W.lmax-W.trav,W.lmax-x);car.on[i]=1;nOn++;
     tP.copy(tA).addScaledVector(u,-car.L[i]);
     tC.copy(tP).addScaledVector(tN,-WHEEL_R);
     tR.subVectors(tC,car.pos);tV.copy(car.w).cross(tR).add(car.vel);
-    const xd=-tV.dot(tN)/dn;
-    let N=SUSP.k*(x+SUSP.pre)+(xd>0?SUSP.cc:SUSP.cr)*xd;
-    if(x>.47)N+=130000*(x-.47)+(xd>0?4000*xd:0);
-    N=clamp(N,0,70000);W.N=N;Ns[i]=N;sumN+=N;
-    if(xd>3.5)car.impact=Math.max(car.impact,xd);
-    tF.copy(tN).multiplyScalar(N);addForce(tF,tC);
-    // tire frame on the sand
+    W.xd=-tV.dot(tN)/dn;
     if(W.f)tf.copy(f).multiplyScalar(cs).addScaledVector(r,sn);else tf.copy(f);
     tf.addScaledVector(tN,-tf.dot(tN)).normalize();tl.crossVectors(tf,tN);
-    const vl=tV.dot(tf),vs=tV.dot(tl);
-    W.vl=vl;W.vs=vs;W.cx=tC.x;W.cy=tC.y;W.cz=tC.z;W.tfx=tf.x;W.tfy=tf.y;W.tfz=tf.z;W.tlx=tl.x;W.tly=tl.y;W.tlz=tl.z;
+    W.vl=tV.dot(tf);W.vs=tV.dot(tl);
+    W.cx=tC.x;W.cy=tC.y;W.cz=tC.z;W.nx=tN.x;W.ny=tN.y;W.nz=tN.z;W.tfx=tf.x;W.tfy=tf.y;W.tfz=tf.z;W.tlx=tl.x;W.tly=tl.y;W.tlz=tl.z;
   }
-  const share=1/Math.max(sumN,MASS*GRAV*.5);
+  // pass 2: springs (dual rate + bump stop), dampers, anti-roll bars
   for(let i=0;i<4;i++){
-    if(!car.on[i])continue;const W=WH[i],N=Ns[i];
-    let mu=.9;
-    let fl=drive*N*share;
-    fl-=Math.tanh(W.vl*2)*N*(.115+(1-car.thr)*.05);                 // sand drag + engine braking
+    const W=WH[i];if(!car.on[i])continue;
+    const x=W.x_,xd=W.xd;
+    let N=x<XOVER?W.k1*x:W.k1*XOVER+W.k2*(x-XOVER);
+    N+=xd>0?W.cc*(xd<2?xd:2+(xd-2)*.55):W.cr*xd;
+    const bs=x-(W.trav-.08);if(bs>0)N+=160000*bs+(xd>0?5000*xd:0);
+    N+=PH.arb[i>>1]*(x-WH[i^1].x_);
+    W.N=N=clamp(N,0,80000);sumN+=N;
+    if(xd>3.5)car.impact=Math.max(car.impact,xd);
+  }
+  const share=1/Math.max(sumN,PH.mass*GRAV*.5);
+  for(let i=0;i<4;i++){
+    if(!car.on[i])continue;const W=WH[i],N=W.N;
+    tC.set(W.cx,W.cy,W.cz);tF.set(W.nx*N,W.ny*N,W.nz*N);addForce(tF,tC);
+    const avl=Math.abs(W.vl);
+    let fl=drive*N*share*(W.f?.85:1.12);
+    fl-=Math.tanh(W.vl*2)*N*(PH.crr+PH.crrV*avl+(1-car.thr)*PH.ebrake);     // soft sand drags hard, more so at speed
     let b=brk;if(inp.hb&&!W.f)b=1;
     fl-=clamp(W.vl*3,-1,1)*b*N*.95;
-    let lat=-mu*N*clamp(W.vs/(Math.abs(W.vl)+1.5)/.19,-1,1);
-    if(inp.hb&&!W.f)lat*=.45;
-    const mag=Math.hypot(fl,lat),lim=mu*N*1.05;
-    if(mag>lim){const k=lim/mag;fl*=k;lat*=k;}
-    slip=Math.max(slip,Math.abs(W.vs)/(Math.abs(W.vl)+3));
-    tF.set(W.tfx*fl+W.tlx*lat,W.tfy*fl+W.tly*lat,W.tfz*fl+W.tlz*lat);
-    tC.set(W.cx,W.cy,W.cz);addForce(tF,tC);
+    // paddles hook up fore-aft; sideways the tire rides up a berm of sand, with less to give as load piles on
+    let muY=W.mu*clamp(1.12-.12*N/N0,.6,1.12);if(inp.hb&&!W.f)muY*=.45;
+    const sa=clamp(W.vs/(avl+1.2)/PH.slipPk,-1,1);
+    let lat=-muY*N*Math.sin(sa*1.5708);
+    const ex=fl/(PH.muX*N+1),ey=lat/(muY*N+1),mag=Math.hypot(ex,ey);
+    if(mag>1){fl/=mag;lat/=mag;}
+    slip=Math.max(slip,Math.abs(W.vs)/(avl+3));
+    tF.set(W.tfx*fl+W.tlx*lat,W.tfy*fl+W.tly*lat,W.tfz*fl+W.tlz*lat);addForce(tF,tC);
     car.spin[i]-=(W.vl/WHEEL_R)*dt*(1+car.thr*.25);
   }
   car.slip=slip;car.grounded=nOn;
   // cage / hull contacts
   let hullHit=0;
   for(let i=0;i<HULL.length;i++){
-    const h=HULL[i];tP.copy(car.pos).addScaledVector(r,h[0]).addScaledVector(u,h[1]).addScaledVector(f,-h[2]);
+    const h=HULL[i];tP.copy(car.pos).addScaledVector(r,h[0]-COM.x).addScaledVector(u,h[1]-COM.y).addScaledVector(f,-(h[2]-COM.z));
     const dep=groundH(tP.x,tP.z)-tP.y;if(dep<=0)continue;
     groundN(tP.x,tP.z,tN);tR.subVectors(tP,car.pos);tV.copy(car.w).cross(tR).add(car.vel);
     const vn=tV.dot(tN);const N=clamp(90000*dep*tN.y-7000*vn,0,90000);
@@ -772,13 +793,11 @@ function physStep(dt,inp){
     if(-vn>3)car.impact=Math.max(car.impact,-vn);
   }
   car.hull=hullHit;
-  // aero
-  F.addScaledVector(car.vel,-.9*v);
-  // integrate
-  car.acc.copy(F).multiplyScalar(1/MASS);
-  car.vel.addScaledVector(F,dt/MASS);car.pos.addScaledVector(car.vel,dt);
-  tQ.copy(car.q).conjugate();T.applyQuaternion(tQ);T.set(T.x/IX,T.y/IY,T.z/IZ).applyQuaternion(car.q);
-  car.w.addScaledVector(T,dt);car.w.multiplyScalar(1-(nOn?0.25:0.08)*dt);
+  F.addScaledVector(car.vel,-.6*PH.cda*v);
+  car.acc.copy(F).multiplyScalar(1/PH.mass);
+  car.vel.addScaledVector(F,dt/PH.mass);car.pos.addScaledVector(car.vel,dt);
+  tQ.copy(car.q).conjugate();T.applyQuaternion(tQ);T.set(T.x/PH.ix,T.y/PH.iy,T.z/PH.iz).applyQuaternion(car.q);
+  car.w.addScaledVector(T,dt);car.w.multiplyScalar(1-(nOn?0.2:0.05)*dt);
   const wx=car.w.x,wy=car.w.y,wz=car.w.z,q=car.q,h=dt*.5;
   const qx=q.x,qy=q.y,qz=q.z,qw=q.w;
   q.x+=h*(wx*qw+wy*qz-wz*qy);q.y+=h*(wy*qw+wz*qx-wx*qz);q.z+=h*(wz*qw+wx*qy-wy*qx);q.w+=h*(-wx*qx-wy*qy-wz*qz);q.normalize();
@@ -791,7 +810,7 @@ function basisQuat(fx,fz,up,out){ // forward on xz + up → quaternion
   return out.setFromRotationMatrix(new THREE.Matrix4().makeBasis(rt,up,fw.clone().negate()));
 }
 function placeCar(x,z,ang){
-  car.pos.set(x,groundH(x,z)+.86,z);car.vel.set(0,0,0);car.w.set(0,0,0);
+  car.pos.set(x,groundH(x,z)+.8,z);car.vel.set(0,0,0);car.w.set(0,0,0);car.tq=0;
   basisQuat(Math.cos(ang),Math.sin(ang),groundN(x,z,new V3()),car.q);car.rev=false;car.flipT=0;
 }
 
@@ -845,8 +864,8 @@ const myTracks=[new Track(),new Track()];
 let camMode=0; // 0 helmet, 1 chase
 const camQ=new Q(),camOff=new V3(),chasePos=new V3(),HEADP=new V3(-.38,.69,.27),tmpQ=new Q(),tmpV=new V3(),tmpV2=new V3();
 function syncCar(dt){
-  const g=me.group;g.position.copy(car.pos);g.quaternion.copy(car.q);
-  for(let i=0;i<4;i++){const w=me.wheels[i];w.piv.position.y=SUSP.ay-car.L[i];w.piv.rotation.y=WH[i].f?-car.steer:0;w.w.rotation.x=car.spin[i];}
+  const g=me.group;org.copy(COM).negate().applyQuaternion(car.q).add(car.pos);g.position.copy(org);g.quaternion.copy(car.q);
+  for(let i=0;i<4;i++){const w=me.wheels[i];w.piv.position.y=AY-car.L[i];w.piv.rotation.y=WH[i].f?-car.steer:0;w.w.rotation.x=car.spin[i];}
   me.spin.rotation.z=-car.steer*2.1;
   g.updateMatrixWorld(true);
   for(const h of me.hands){tmpV.copy(h.wrist);h.hg.localToWorld(tmpV);g.worldToLocal(tmpV);tmpV2.subVectors(tmpV,h.elbow);const len=tmpV2.length();
@@ -855,7 +874,7 @@ function syncCar(dt){
   // tracks + roost
   f.set(0,0,-1).applyQuaternion(car.q);r.set(1,0,0).applyQuaternion(car.q);
   for(let s=0;s<2;s++){const i=2+s,W=WH[i];
-    const x=car.pos.x+r.x*W.x-f.x*W.z,z=car.pos.z+r.z*W.x-f.z*W.z;
+    const x=org.x+r.x*W.x-f.x*W.z,z=org.z+r.z*W.x-f.z*W.z;
     myTracks[s].add(x,z,r.x,r.z,!!car.on[i]);
     if(car.on[i]&&car.speed>1.5){
       const amt=(car.speed*.04+car.thr*1.4+car.slip*3)*dt*22;
@@ -864,7 +883,7 @@ function syncCar(dt){
     }
   }
 }
-const V3Y=new V3(0,1,0);
+const V3Y=new V3(0,1,0),org=new V3();
 function updateCamera(dt){
   f.set(0,0,-1).applyQuaternion(car.q);
   if(camMode===0){
@@ -875,7 +894,7 @@ function updateCamera(dt){
     const chat=car.grounded?Math.min(car.speed,30)*.00035:0;
     tmpV2.set(clamp(-tmpV.x*.0035,-.05,.05)+(Math.random()-.5)*chat,clamp(-tmpV.y*.003,-.07,.05)+(Math.random()-.5)*chat,clamp(-tmpV.z*.004,-.06,.08));
     camOff.lerp(tmpV2,1-Math.exp(-dt*9));
-    camera.position.copy(HEADP).add(camOff).applyQuaternion(car.q).add(car.pos);
+    camera.position.copy(HEADP).add(camOff).applyQuaternion(car.q).add(org);
     camera.quaternion.copy(camQ);
   }else{
     tmpV.set(f.x,0,f.z).normalize();
@@ -1011,14 +1030,14 @@ for(let d=30;d<=62;d+=2)trail.push([SX+dx0*d,SZ+dz0*d]);
 fine.update(SX,SZ,999);coarse.update(SX,SZ,999);updateBushes(SX,SZ);
 camQ.copy(car.q);chasePos.copy(car.pos).add(new V3(0,3,0));
 
-let running=false,last=0,acc=0,gT=0,airT=0,fpsT=0;
+let running=false,paused=false,last=0,acc=0,gT=0,airT=0,fpsT=0;
 const NOIN={steer:0,gas:0,brake:1,hb:true};
 function frame(now){
   requestAnimationFrame(frame);
   let dt=Math.min(.05,(now-last)/1000||.016);last=now;
   if(running){tod+=dt;readInput(dt);}
   acc+=dt;const H=1/240;let n=0;
-  while(acc>=H&&n<14){physStep(H,running?inp:NOIN);acc-=H;n++;}
+  while(!paused&&acc>=H&&n<14){physStep(H,running?inp:NOIN);acc-=H;n++;}
   if(acc>H)acc=0;
   if(!isFinite(car.pos.x+car.pos.y+car.vel.x+car.q.w)){placeCar(SX,SZ,HEAD0);}
   if(running)stepLeads(dt);else{lead1.pose(dt);lead2.pose(dt);}
@@ -1049,7 +1068,7 @@ $('go').onclick=()=>{
   $('start').hidden=true;running=true;car.rev=false;initAudio();if(AC&&AC.state==='suspended')AC.resume();
   toast('Follow the whips',2.4);canvas.focus();
 };
-window.__glamis={car,inp,lead1,lead2,get tod(){return tod;},set tod(v){tod=v;},setCam:m=>{camMode=m;},keys};
+window.__glamis={PH,WH,physStep,placeCar,setFlat:v=>{FLAT=v;hCache.clear();},stop:()=>{running=false;paused=true;},car,inp,lead1,lead2,get tod(){return tod;},set tod(v){tod=v;},setCam:m=>{camMode=m;},keys};
 requestAnimationFrame(frame);
 })();
 </script>
