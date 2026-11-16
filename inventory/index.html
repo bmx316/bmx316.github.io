@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0f17">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Stockwise">
+  <meta name="description" content="Pan your phone camera around a room and get a categorized, exportable inventory. Runs entirely on your device.">
+  <title>Stockwise — Camera Inventory</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.2"/></symbol>
+      <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".6"/><circle cx="4" cy="12" r=".6"/><circle cx="4" cy="18" r=".6"/></symbol>
+      <symbol id="i-export" viewBox="0 0 24 24"><path d="M12 15V3M7.5 7.5 12 3l4.5 4.5M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></symbol>
+      <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.9 2.9l-.1-.1a1.7 1.7 0 0 0-2.8 1.2V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.8-1.2l-.1.1a2 2 0 1 1-2.9-2.9l.1-.1a1.7 1.7 0 0 0-1.2-2.8H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.2-2.8l-.1-.1a2 2 0 1 1 2.9-2.9l.1.1a1.7 1.7 0 0 0 2.8-1.2V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.8 1.2l.1-.1a2 2 0 1 1 2.9 2.9l-.1.1a1.7 1.7 0 0 0 1.2 2.8h.1a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+      <symbol id="i-flip" viewBox="0 0 24 24"><path d="M20 7h-3.5L15 5H9L7.5 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1z"/><path d="M9.5 12.5a2.7 2.7 0 0 1 4.8-1.3M14.5 13.5a2.7 2.7 0 0 1-4.8 1.3M14.6 9.7v1.7h-1.7M9.4 16.3v-1.7h1.7"/></symbol>
+      <symbol id="i-photo" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15-4.5-4.5L7 20"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.500C5 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.4"/></symbol>
+      <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+      <symbol id="i-csv" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16M15 4v16"/></symbol>
+      <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+      <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13.500 5l-3 14"/></symbol>
+      <symbol id="i-share" viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8.200 10.900 7.600-3.800M8.200 13.100l7.600 3.800"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+      <symbol id="i-box" viewBox="0 0 24 24"><path d="m12 3 8 4.500v9L12 21l-8-4.500v-9z"/><path d="m4 7.500 8 4.500 8-4.500M12 12v9"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"><svg class="ico"><use href="#i-box"/></svg></span>
+      <span class="brand-name">Stockwise</span>
+    </div>
+    <button class="room-btn" id="roomBtn" aria-label="Change location">
+      <svg class="ico"><use href="#i-pin"/></svg>
+      <span id="roomLabel">Unassigned</span>
+      <svg class="ico chev"><use href="#i-chev"/></svg>
+    </button>
+    <button class="icon-btn" id="settingsBtn" aria-label="Settings"><svg class="ico"><use href="#i-gear"/></svg></button>
+  </header>
+
+  <main>
+    <!-- SCAN -->
+    <section class="view active" id="view-scan" aria-label="Scan">
+      <div class="stage" id="stage">
+        <video id="video" playsinline muted autoplay></video>
+        <canvas id="overlay"></canvas>
+        <div class="reticle" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+        <div class="stage-top">
+          <div class="status" id="status"><span class="dot"></span><span id="statusText">Ready</span></div>
+          <div class="stage-tools">
+            <label class="glass-btn" aria-label="Scan a photo" title="Scan a photo">
+              <svg class="ico"><use href="#i-photo"/></svg>
+              <input type="file" id="photoInput" accept="image/*" hidden>
+            </label>
+            <button class="glass-btn" id="flipBtn" aria-label="Switch camera" title="Switch camera"><svg class="ico"><use href="#i-flip"/></svg></button>
+          </div>
+        </div>
+
+        <div class="stage-empty" id="stageEmpty">
+          <div class="empty-mark"><svg class="ico"><use href="#i-scan"/></svg></div>
+          <h2>Scan a space</h2>
+          <p>Point your camera at a room and pan slowly. Items are detected, counted and categorized automatically — nothing leaves your device.</p>
+          <p class="err" id="camError" hidden></p>
+        </div>
+
+        <div class="stage-bottom">
+          <div class="live" id="liveChips" aria-live="polite"></div>
+          <div class="controls">
+            <div class="stat"><b id="sessCount">0</b><span>this scan</span></div>
+            <button class="shutter" id="scanBtn" aria-label="Start scanning"><span></span></button>
+            <div class="stat"><b id="totalCount">0</b><span>total items</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INVENTORY -->
+    <section class="view" id="view-inventory" aria-label="Inventory">
+      <div class="page">
+        <div class="page-head">
+          <div>
+            <h1>Inventory</h1>
+            <p class="sub" id="invSub">No items yet</p>
+          </div>
+          <button class="btn primary sm" id="addBtn"><svg class="ico"><use href="#i-plus"/></svg>Add item</button>
+        </div>
+        <div class="search">
+          <svg class="ico"><use href="#i-search"/></svg>
+          <input id="search" type="search" placeholder="Search items, categories, locations" autocomplete="off">
+        </div>
+        <div class="filters" id="filters"></div>
+        <div id="invList"></div>
+      </div>
+    </section>
+
+    <!-- EXPORT -->
+    <section class="view" id="view-export" aria-label="Export">
+      <div class="page">
+        <div class="page-head"><div><h1>Export</h1><p class="sub">Summary and reports</p></div></div>
+        <div class="kpis">
+          <div class="kpi"><b id="kItems">0</b><span>Items</span></div>
+          <div class="kpi"><b id="kTypes">0</b><span>Item types</span></div>
+          <div class="kpi"><b id="kCats">0</b><span>Categories</span></div>
+          <div class="kpi"><b id="kRooms">0</b><span>Locations</span></div>
+        </div>
+        <div class="card">
+          <h3>By category</h3>
+          <div id="breakdown" class="breakdown"></div>
+        </div>
+        <div class="card">
+          <h3>Export inventory</h3>
+          <div class="export-grid">
+            <button class="export-btn" data-export="csv"><svg class="ico"><use href="#i-csv"/></svg><b>Spreadsheet</b><span>CSV for Excel / Sheets</span></button>
+            <button class="export-btn" data-export="pdf"><svg class="ico"><use href="#i-doc"/></svg><b>PDF report</b><span>Print or save as PDF</span></button>
+            <button class="export-btn" data-export="json"><svg class="ico"><use href="#i-code"/></svg><b>JSON</b><span>Full data backup</span></button>
+            <button class="export-btn" data-export="share"><svg class="ico"><use href="#i-share"/></svg><b>Share</b><span>Send the spreadsheet</span></button>
+          </div>
+          <button class="btn ghost block" data-export="copy"><svg class="ico"><use href="#i-copy"/></svg>Copy summary as text</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar" role="tablist">
+    <button class="tab active" data-view="scan" role="tab"><svg class="ico"><use href="#i-scan"/></svg><span>Scan</span></button>
+    <button class="tab" data-view="inventory" role="tab"><svg class="ico"><use href="#i-list"/></svg><span>Inventory</span><em class="badge" id="tabBadge" hidden>0</em></button>
+    <button class="tab" data-view="export" role="tab"><svg class="ico"><use href="#i-export"/></svg><span>Export</span></button>
+  </nav>
+
+  <!-- Sheets -->
+  <div class="scrim" id="scrim" hidden></div>
+
+  <div class="sheet" id="itemSheet" hidden role="dialog" aria-modal="true" aria-labelledby="itemTitle">
+    <div class="grab"></div>
+    <h2 id="itemTitle">Edit item</h2>
+    <form id="itemForm">
+      <label>Name<input name="name" required maxlength="80" autocomplete="off"></label>
+      <div class="row2">
+        <label>Category<select name="category"></select></label>
+        <label>Quantity<input name="qty" type="number" min="1" max="99999" inputmode="numeric" required></label>
+      </div>
+      <label>Location<input name="room" list="roomList" maxlength="40" autocomplete="off" placeholder="Unassigned"></label>
+      <label>Notes<textarea name="notes" rows="2" maxlength="300" placeholder="Serial number, condition, value…"></textarea></label>
+      <div class="sheet-actions">
+        <button type="button" class="btn danger" id="itemDelete">Delete</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn ghost" data-close>Cancel</button>
+        <button type="submit" class="btn primary">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="sheet" id="roomSheet" hidden role="dialog" aria-modal="true" aria-labelledby="roomTitle">
+    <div class="grab"></div>
+    <h2 id="roomTitle">Location</h2>
+    <p class="hint">New detections are filed under the selected location.</p>
+    <div class="room-list" id="roomChoices"></div>
+    <form id="roomForm" class="inline-form">
+      <input name="room" placeholder="Add a location (e.g. Garage)" maxlength="40" autocomplete="off" required>
+      <button class="btn primary" type="submit">Add</button>
+    </form>
+  </div>
+
+  <div class="sheet" id="settingsSheet" hidden role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <div class="grab"></div>
+    <h2 id="setTitle">Settings</h2>
+    <label class="setting">
+      <span><b>Detection confidence</b><small>Higher = fewer false detections, may miss items</small></span>
+      <output id="thrOut">55%</output>
+      <input type="range" id="thr" min="30" max="90" step="5">
+    </label>
+    <label class="setting toggle">
+      <span><b>Ignore people</b><small>Don't add people to the inventory</small></span>
+      <input type="checkbox" id="ignorePeople">
+    </label>
+    <label class="setting toggle">
+      <span><b>Ignore pets &amp; animals</b><small>Skip cats, dogs, birds, etc.</small></span>
+      <input type="checkbox" id="ignoreAnimals">
+    </label>
+    <label class="setting toggle">
+      <span><b>Higher accuracy model</b><small>Slower; larger one-time download</small></span>
+      <input type="checkbox" id="hiAcc">
+    </label>
+    <div class="sheet-actions">
+      <button class="btn danger" id="clearAll">Clear inventory</button>
+      <span class="spacer"></span>
+      <button class="btn primary" data-close>Done</button>
+    </div>
+    <p class="hint fine">Detection runs on your device. No video, images or inventory data are uploaded.</p>
+  </div>
+
+  <datalist id="roomList"></datalist>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div id="printArea" aria-hidden="true"></div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
