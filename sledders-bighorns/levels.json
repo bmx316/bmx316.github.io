@@ -1,0 +1,119 @@
+{
+  "source": "AWS Terrain Tiles (USGS 3DEP), Terrarium z14 (~8 m)",
+  "route_km": 26.68,
+  "level_size_m": 8000.0,
+  "lodges": {
+    "Bear Lodge Resort": [
+      44.768293,
+      -107.528309
+    ],
+    "Wyoming High Country Lodge": [
+      44.8192644,
+      -107.8583407
+    ]
+  },
+  "levels": [
+    {
+      "level": 1,
+      "lodges_px_2049": {
+        "Bear Lodge Resort": [
+          1541,
+          1136
+        ]
+      },
+      "min_elev_m": 2235.8,
+      "max_elev_m": 2806.8,
+      "relief_m": 571.0,
+      "center_latlon": [
+        44.772244,
+        -107.55389
+      ],
+      "nw_corner": [
+        44.808237,
+        -107.604524
+      ],
+      "se_corner": [
+        44.736251,
+        -107.503256
+      ]
+    },
+    {
+      "level": 2,
+      "min_elev_m": 2422.9,
+      "max_elev_m": 2922.8,
+      "relief_m": 500.0,
+      "center_latlon": [
+        44.783011,
+        -107.623608
+      ],
+      "nw_corner": [
+        44.819005,
+        -107.674242
+      ],
+      "se_corner": [
+        44.747018,
+        -107.572973
+      ]
+    },
+    {
+      "level": 3,
+      "min_elev_m": 2408.0,
+      "max_elev_m": 3032.2,
+      "relief_m": 624.2,
+      "center_latlon": [
+        44.793779,
+        -107.693325
+      ],
+      "nw_corner": [
+        44.829772,
+        -107.743959
+      ],
+      "se_corner": [
+        44.757785,
+        -107.642691
+      ]
+    },
+    {
+      "level": 4,
+      "min_elev_m": 2509.8,
+      "max_elev_m": 3032.2,
+      "relief_m": 522.3,
+      "center_latlon": [
+        44.804546,
+        -107.763042
+      ],
+      "nw_corner": [
+        44.840539,
+        -107.813676
+      ],
+      "se_corner": [
+        44.768553,
+        -107.712408
+      ]
+    },
+    {
+      "level": 5,
+      "lodges_px_2049": {
+        "Wyoming High Country Lodge": [
+          507,
+          912
+        ]
+      },
+      "min_elev_m": 2510.8,
+      "max_elev_m": 3062.4,
+      "relief_m": 551.6,
+      "center_latlon": [
+        44.815314,
+        -107.83276
+      ],
+      "nw_corner": [
+        44.851307,
+        -107.883394
+      ],
+      "se_corner": [
+        44.77932,
+        -107.782125
+      ]
+    }
+  ]
+}
