@@ -1,0 +1,110 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>html,body{margin:0;background:#9fc3e6;overflow:hidden}canvas{display:block}
+#lbl{position:fixed;left:24px;bottom:20px;font:600 22px/1.3 system-ui,sans-serif;color:#fff;text-shadow:0 1px 4px #0009}</style></head>
+<body><div id="lbl"></div>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three';
+const P = new URLSearchParams(location.search);
+const level = P.get('level');
+const [cu, cv, ch] = P.get('cam').split(',').map(Number);
+const [tu, tv, th] = P.get('look').split(',').map(Number);
+const fov = Number(P.get('fov') || 55);
+document.getElementById('lbl').textContent = P.get('label') || '';
+
+const meta = await (await fetch('levels.json')).json();
+const M = meta[level];
+const buf = await (await fetch(`level_${level}.f32`)).arrayBuffer();
+const H = new Float32Array(buf), N = M.n, SIZE = 8000;
+const hAt = (u, v) => { // bilinear, u east 0..1, v south 0..1
+  const x = Math.min(Math.max(u, 0), 1) * (N - 1), y = Math.min(Math.max(v, 0), 1) * (N - 1);
+  const ix = Math.min(Math.floor(x), N - 2), iy = Math.min(Math.floor(y), N - 2), fx = x - ix, fy = y - iy;
+  const a = H[iy*N+ix], b = H[iy*N+ix+1], c = H[(iy+1)*N+ix], d = H[(iy+1)*N+ix+1];
+  return (a*(1-fx)*(1-fy) + b*fx*(1-fy) + c*(1-fx)*fy + d*fx*fy) - M.min;
+};
+const W = (u, v) => new THREE.Vector3((u - .5) * SIZE, hAt(u, v), (v - .5) * SIZE);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.95;
+document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const FOG = new THREE.Color(0xc9dcef);
+scene.fog = new THREE.Fog(FOG, Number(P.get('near') || 900), Number(P.get('far') || 7500));
+
+// sky dome
+const sky = new THREE.Mesh(new THREE.SphereGeometry(30000, 32, 16), new THREE.ShaderMaterial({
+  side: THREE.BackSide, depthWrite: false, fog: false,
+  vertexShader: 'varying vec3 p; void main(){p=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+  fragmentShader: 'varying vec3 p; void main(){float t=clamp(p.y*2.2,0.,1.);gl_FragColor=vec4(mix(vec3(.80,.87,.94),vec3(.27,.50,.82),pow(t,.7)),1.);}'
+}));
+scene.add(sky);
+
+// terrain
+const g = new THREE.PlaneGeometry(SIZE, SIZE, N - 1, N - 1); g.rotateX(-Math.PI / 2);
+const pos = g.attributes.position;
+for (let i = 0; i < pos.count; i++) pos.setY(i, H[i] - M.min);
+g.computeVertexNormals();
+const nrm = g.attributes.normal, col = new Float32Array(pos.count * 3);
+const snow = new THREE.Color(0xeef3fa), shade = new THREE.Color(0xc9d8ea), rock = new THREE.Color(0x7d7468), c = new THREE.Color();
+for (let i = 0; i < pos.count; i++) {
+  const ny = nrm.getY(i), slope = Math.acos(Math.min(1, ny)) * 57.3;
+  c.copy(snow).lerp(shade, Math.min(1, slope / 30));
+  if (slope > 34) c.lerp(rock, Math.min(1, (slope - 34) / 14) * .85);
+  col.set([c.r, c.g, c.b], i * 3);
+}
+g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+scene.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .92, metalness: 0 })));
+
+// conifer stands (illustrative: placed by slope/elevation + noise, not real canopy data)
+const hash = (x, y) => { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); };
+const vnoise = (x, y) => { const ix = Math.floor(x), iy = Math.floor(y), fx = x - ix, fy = y - iy;
+  const sx = fx*fx*(3-2*fx), sy = fy*fy*(3-2*fy);
+  const a = hash(ix, iy), b = hash(ix+1, iy), c2 = hash(ix, iy+1), d = hash(ix+1, iy+1);
+  return a + (b-a)*sx + (c2-a)*sy + (a-b-c2+d)*sx*sy; };
+const tree = new THREE.ConeGeometry(4.5, 18, 7); tree.translate(0, 9, 0);
+const MAXT = 60000, trees = new THREE.InstancedMesh(tree, new THREE.MeshStandardMaterial({ color: 0x1f3a2a, roughness: 1 }), MAXT);
+const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
+let n = 0, rnd = 1;
+const R = () => (rnd = (rnd * 16807) % 2147483647) / 2147483647;
+for (let k = 0; k < 900000 && n < MAXT; k++) {
+  const u = R(), v = R(); const y = hAt(u, v);
+  const e = (y + M.min - M.min) / (M.max - M.min);
+  const dx = hAt(u + .002, v) - hAt(u - .002, v), dz = hAt(u, v + .002) - hAt(u, v - .002);
+  const slope = Math.atan(Math.hypot(dx, dz) / 32) * 57.3;
+  const patch = vnoise(u * 18, v * 18) * .65 + vnoise(u * 55, v * 55) * .35;
+  const want = patch - .52 + (slope > 6 && slope < 32 ? .12 : -.1) - e * .25;
+  if (want <= 0 || R() > want * 3) continue;
+  if (Object.values(M.lodges).some(([lu, lv]) => Math.hypot((u - lu) * SIZE, (v - lv) * SIZE) < 90)) continue;
+  const s = .7 + R() * .7; sc.set(s, s * (.9 + R() * .4), s);
+  m4.compose(new THREE.Vector3((u - .5) * SIZE, y - 1, (v - .5) * SIZE), q, sc); trees.setMatrixAt(n++, m4);
+}
+trees.count = n; scene.add(trees);
+
+// lodges
+for (const [name, [lu, lv]] of Object.entries(M.lodges)) {
+  const p = W(lu, lv), grp = new THREE.Group();
+  const wall = new THREE.Mesh(new THREE.BoxGeometry(36, 9, 18), new THREE.MeshStandardMaterial({ color: 0x6b4228, roughness: .9 }));
+  wall.position.y = 4.5; grp.add(wall);
+  const tri = new THREE.Shape([new THREE.Vector2(-11, 0), new THREE.Vector2(11, 0), new THREE.Vector2(0, 9)]);
+  const rg = new THREE.ExtrudeGeometry(tri, { depth: 40, bevelEnabled: false }); rg.translate(0, 0, -20); rg.rotateY(Math.PI / 2);
+  const roof = new THREE.Mesh(rg, new THREE.MeshStandardMaterial({ color: 0xf2f6fb, roughness: .8 }));
+  roof.position.y = 9; grp.add(roof);
+  const sign = new THREE.Mesh(new THREE.BoxGeometry(2, 14, 2), new THREE.MeshStandardMaterial({ color: 0x3a2a1c }));
+  sign.position.set(26, 7, 0); grp.add(sign);
+  for (let i = 0; i < 6; i++) { const cab = new THREE.Mesh(new THREE.BoxGeometry(9, 5, 8), wall.material);
+    cab.position.set(-40 + i * 16, 2.5, 28 + (i % 2) * 6); grp.add(cab); }
+  grp.position.copy(p); grp.position.y -= 1; scene.add(grp);
+}
+
+// light
+scene.add(new THREE.HemisphereLight(0xc7dcff, 0x5d6878, 0.55));
+const sun = new THREE.DirectionalLight(0xffe6c4, 3.4); sun.position.set(-4000, 1300, 1800); scene.add(sun);
+
+const cam = new THREE.PerspectiveCamera(fov, innerWidth / innerHeight, 3, 60000);
+const cp = W(cu, cv); cp.y += ch; cam.position.copy(cp);
+const tp = W(tu, tv); tp.y += th; cam.lookAt(tp);
+renderer.render(scene, cam);
+window.DONE = true;
+</script></body></html>
